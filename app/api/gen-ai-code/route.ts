@@ -4,6 +4,8 @@ import { FileData, Message } from "@/types/workspace";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import { detectPromptInjection } from "@arcjet/next";
+import { aj } from "@/lib/arcjet";
 
 function trimHistory(messages: Message[]): Message[] {
     if (messages.length <= 10) return messages;
@@ -152,6 +154,23 @@ export async function POST(request: NextRequest) {
             { message: "No messages provided" },
             { status: 400 }
         );
+    }
+
+    //Arcjet: rate limit, prompt injection, sensitive info----------
+    const lastUserMessage =
+        [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
+    const decision = await aj.protect(request, {
+        requested: 1,
+        userId: clerkId,
+        detectPromptInjectionMessage: lastUserMessage,
+    });
+
+    if (decision.isDenied()) {
+        //Return the reason type as the message -- rateLimit, bot, promptInjection, etc.
+        return Response.json(
+            { message: decision.reason?.type ?? "Request blocked" },
+            { status: 429 },
+        )
     }
 
     const user = await db.user.findUnique({
@@ -307,28 +326,28 @@ export async function POST(request: NextRequest) {
                     async (tx) => {
                         const ws = workspaceId
                             ? await tx.workspace.update({
-                                  where: {
-                                      id: workspaceId,
-                                      userId,
-                                  },
-                                  data: {
-                                      title:
-                                          aiTitle ??
-                                          lastUserMsg.content.slice(0, 80),
-                                      messages: updatedMessages as never,
-                                      fileData: newFileData as never,
-                                  },
-                              })
+                                where: {
+                                    id: workspaceId,
+                                    userId,
+                                },
+                                data: {
+                                    title:
+                                        aiTitle ??
+                                        lastUserMsg.content.slice(0, 80),
+                                    messages: updatedMessages as never,
+                                    fileData: newFileData as never,
+                                },
+                            })
                             : await tx.workspace.create({
-                                  data: {
-                                      userId,
-                                      title:
-                                          aiTitle ??
-                                          lastUserMsg.content.slice(0, 80),
-                                      messages: updatedMessages as never,
-                                      fileData: newFileData as never,
-                                  },
-                              });
+                                data: {
+                                    userId,
+                                    title:
+                                        aiTitle ??
+                                        lastUserMsg.content.slice(0, 80),
+                                    messages: updatedMessages as never,
+                                    fileData: newFileData as never,
+                                },
+                            });
 
                         await tx.user.update({
                             where: {
