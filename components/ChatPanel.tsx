@@ -6,8 +6,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { BlueTitle } from "./reusables";
 import PricingModal from "./PricingModal";
 import { cn } from "@/lib/utils";
-import { ArrowUp, Check, Loader2, Paperclip } from "lucide-react";
+import { ArrowUp, Check, Loader2, Paperclip, Sparkles, Square, Wand2, X } from "lucide-react";
 import { Button } from "./ui/button";
+import { useUser } from "@clerk/nextjs";
+import ReactMarkdown from "react-markdown"
+import { createClient } from "@supabase/supabase-js"
+import { toast } from "sonner";
 
 interface ChatPanelProps {
     messages: Message[];
@@ -22,6 +26,11 @@ interface ChatPanelProps {
     workspaceId: string | null;
     appTitle: string | null;
 }
+
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 const ChatPanel = ({
     messages,
@@ -39,7 +48,12 @@ const ChatPanel = ({
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+    const { user } = useUser()
+
     const [input, setInput] = useState("");
+    const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileRef = useRef<HTMLInputElement>(null);
 
     const hasAutoSubmittedRef = useRef(false);
     const noCredits = credits <= 0;
@@ -96,8 +110,8 @@ const ChatPanel = ({
         const trimmed = input.trim();
         if (!trimmed || isGenerating || isImproving || noCredits) return;
         setInput("");
-        //TODO: pass pendingImageUrl as second arg + reset it after submit
-        await onGenerate(trimmed);
+        setPendingImageUrl(null);
+        await onGenerate(trimmed, pendingImageUrl ?? undefined);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -106,6 +120,37 @@ const ChatPanel = ({
             handleSubmit();
         }
     };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !file.type.startsWith("image/")) return;
+        setIsUploading(true);
+
+        try {
+            const ext = file.name.split(".").pop();
+            //path: userId/workspaceId/timestamp.ext
+            //workspaceId may be "new" before first generation
+            const path = `${userId}/${workspaceId ?? "new"}/${Date.now()}.${ext}`;
+            const { error } = await supabase.storage
+                .from("workspace-images")
+                .upload(path, file, { upsert: true });
+
+            if (error) throw error;
+            const { data } = supabase.storage
+                .from("workspace-images")
+                .getPublicUrl(path);
+            setPendingImageUrl(data.publicUrl);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            toast.error(message);
+        } finally {
+            setIsUploading(false);
+            if (fileRef.current) fileRef.current.value = "";
+        }
+    };
+
+    const lastMsg = messages[messages.length - 1];
+    const isStreamingAssistant = isImproving && lastMsg?.role === "assistant"
 
 
     return (
@@ -143,37 +188,96 @@ const ChatPanel = ({
                 )}
 
                 <div className="space-y-4">
-                    {messages.map((msg, i) => (
-                        <div key={i}>
-                            {msg.role === "user" ? (
-                                <div className="flex items-start justify-end gap-2">
-                                    <div className="max-w-[85%] space-y-1.5">
-                                        {/* TODO: show msg.imageUrl thumbnail if present */}
-                                        <div className="rounded-2xl rounded-br-sm bg-white/10 px-3.5 py-2.5">
-                                            <p className="break-words text-[13px] leading-relaxed text-white/80">
-                                                {msg.content}
-                                            </p>
+                    {messages.map((msg, i) => {
+                        const isLast = i === messages.length - 1;
+                        const isLiveStream = isLast && isStreamingAssistant;
+                        return (
+                            <div key={i}>
+                                {msg.role === "user" ? (
+                                    <div className="flex items-start justify-end gap-2">
+                                        <div className="max-w-[85%] space-y-1.5">
+                                            {/* TODO: show msg.imageUrl thumbnail if present */}
+                                            {msg.imageUrl && (
+                                                //eslint-disabled-next-line @next/next/no-image-element
+                                                <img
+                                                    src={msg.imageUrl}
+                                                    alt="uploaded"
+                                                    className="max-h-40 w-full rounded-lg object-cover"
+                                                />
+                                            )}
+                                            <div className="rounded-2xl rounded-br-sm bg-white/10 px-3.5 py-2.5">
+                                                <p className="break-words text-[13px] leading-relaxed text-white/80
+                                            wrap-break-word">
+                                                    {msg.content}
+                                                </p>
+                                            </div>
                                         </div>
+                                        {user?.imageUrl ? (
+                                            //eslint-disable-next-line @next/next/n0-img-element
+                                            <img
+                                                src={user.imageUrl}
+                                                alt={user.fullName ?? "You"}
+                                                className="mt-0.5 h-6 w-6 shrink-0 rounded-full"
+                                            />
+                                        ) : (
+                                            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full
+                                            bg-white/10 text-[10px] font-semibold text-white/50">
+                                                {user?.firstName?.[0] ?? "U"}
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="flex items-start gap-2">
-                                    <Image
-                                        src="/logo-short.jpeg"
-                                        alt="Forge"
-                                        width={24}
-                                        height={24}
-                                        className="mt-0.5 h-6 w-6 shrink-0 rounded-md"
-                                    />
-                                    <div className="min-w-0 rounded-2xl rounded-tl-sm bg-white/5 px-3.5 py-2.5">
-                                        <p className="break-words text-[13px] leading-relaxed text-white/70">
-                                            {msg.content}
-                                        </p>
+                                ) : (
+                                    <div className="flex items-start gap-2">
+                                        <Image
+                                            src="/logo-short.jpeg"
+                                            alt="Forge"
+                                            width={24}
+                                            height={24}
+                                            className="mt-0.5 h-6 w-6 shrink-0 rounded-md"
+                                        />
+                                        <div className="min-w-0 rounded-2xl rounded-tl-sm bg-white/5 px-3.5 py-2.5" >
+                                            {isLiveStream && !msg.content ? (
+                                                //Empty placeholder -  show cline thinking indicator
+                                                <div className="flex items-center gap-2">
+                                                    <Wand2 className="h-3 w-3 shrink-0 text-blue-400/60 animate-pulse" />
+                                                    <span className="text-[12px] text-white/30 animate-pulse">
+                                                        Cline is thinking
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                isLiveStream && msg.content ? (
+                                                    <div>
+                                                        <div className="mb-1.5 flex items-center gap-1.5">
+                                                            <Wand2 className="h-3 w-3 shrink-0 text-blue-400/60" />
+                                                            <span className="text-[10px] font-medium uppercase tracking-wider
+                                                        text-blue-400/50">
+                                                                Agent reasoning
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-[12px] leading-relaxed text-white/35 wrap-break-word">
+                                                            {msg.content}
+                                                            <span className="ml-0.5 inline-block h-3 w-0.5 animate-
+                                                    [blink_1s_ease-n-out_infinite] bg-blue-400/60 align-middle" />
+                                                        </p>
+                                                    </div>
+
+                                                ) : (
+                                                    <div className="prose prose-sm prose-invert max-w-none text-[13px] leading-relaxed 
+                                    text-white/70 wrap-break-word text-[13px] leading-relaxed text-white/70 [&_code]:rounded [&_code]:bg-white/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-blue-300/80 [&_code]:text-xs [&_code]:break-all [&_li]:my-0.5 [&_p]:my-1 [&_pre]:overflow-x-auto! [&_pre]:whitespace-pre-wrap! [&_ul]:my-1">
+                                                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                                    </div>
+
+                                                )
+                                            )}
+                                        </div>
+
+
+
                                     </div>
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                                )}
+                            </div>
+                        )
+                    })}
                 </div>
 
                 {/* Status steps - shown while isGenerating */}
@@ -219,8 +323,37 @@ const ChatPanel = ({
                 )}
             </div>
 
+            {noCredits && (
+                <div className="mx-3 mb-2 rounded-xl border border-red-500/15 bg-red-950/40 px-4 py-3">
+                    <p className="mb-2 text-[12px] font-medium text-red-400/80">
+                        You&apos;ve used all your credits
+                    </p>
+                    <PricingModal reason="credits">
+                        <span className="inline-flex h-8 items-center gap-1.5 rounded-full text-xs active:scale-95 cursor-pointer bg-white text-black px-3">
+                            <Sparkles className="h-3 w-3" />
+                            Upgrade plan
+                        </span>
+                    </PricingModal>
+                </div>)}
+
             <div className="border-t border-white/6 p-3">
                 {/* TODO:  Pending image preview thumbnail with X remove button */}
+                {pendingImageUrl && (
+                    <div className="relative mb-2 w-fit">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={pendingImageUrl}
+                            alt="pending upload"
+                            className="h-16 w-16 rounded-lg object-cover"
+                        />
+                        <button
+                            onClick={() => setPendingImageUrl(null)}
+                            className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/80 text-white/60 hover:text-white"
+                        >
+                            <X className="h-2.5 w-2.5" />
+                        </button>
+                    </div>
+                )}
 
                 <div
                     className={cn(
@@ -255,29 +388,54 @@ const ChatPanel = ({
                         <Button
                             variant="ghost"
                             size="icon"
-                            disabled
+                            onClick={() => fileRef.current?.click()}
+                            disabled={isGenerating || isImproving || isUploading || noCredits}
                             className="h-7 w-7 rounded-lg text-white/25 hover:bg-white/6 hover:text-white/50 disabled:opacity-40"
                         >
-                            <Paperclip className="h-3.5 w-3.5" />
-                        </Button>
-
-                        <Button
-                            size="icon"
-                            onClick={handleSubmit}
-                            disabled={!canSubmit}
-                            className={cn(
-                                "h-7 w-7 rounded-lg transition-all",
-                                canSubmit
-                                    ? "bg-white text-black hover:bg-white/90 active:scale-95"
-                                    : "bg-white/8 text-white/20 shadow-none"
-                            )}
-                        >
-                            {isGenerating || isImproving ? (
+                            {isUploading ? (
                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                             ) : (
-                                <ArrowUp className="h-3.5 w-3.5" />
+                                <Paperclip className="h-3.5 w-3.5" />
                             )}
                         </Button>
+
+                        <input
+                            ref={fileRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleFileChange}
+                        />
+
+                        {isGenerating || isImproving ? (
+                            <Button
+                                size="icon"
+                                onClick={onStop}
+                                className={cn(
+                                    "h-7 w-7 rounded-lg bg-white/10 text-white/60 hover:bg-white/20 hover:text-white active:scale-95 transition-all"
+                                )}
+                            >
+                                <Square className="h-3 w-3 fill-current" />
+                            </Button>
+                        ) : (
+                            <Button
+                                size="icon"
+                                onClick={handleSubmit}
+                                disabled={!canSubmit}
+                                className={cn(
+                                    "h-7 w-7 rounded-lg transition-all",
+                                    canSubmit
+                                        ? "bg-white text-black hover:bg-white/90 active:scale-95"
+                                        : "bg-white/8 text-white/20 shadow-none"
+                                )}
+                            >
+                                {isGenerating || isImproving ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                    <ArrowUp className="h-3.5 w-3.5" />
+                                )}
+                            </Button>
+                        )}
                     </div>
                 </div>
                 <p className="mt-1.5 text-center text-[10px] text-white/15">
@@ -287,7 +445,7 @@ const ChatPanel = ({
                 </p>
 
             </div>
-        </div>
+        </div >
     );
 };
 

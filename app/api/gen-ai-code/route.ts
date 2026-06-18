@@ -157,6 +157,14 @@ export async function POST(request: NextRequest) {
     }
 
     //Arcjet: rate limit, prompt injection, sensitive info----------
+    //Reconstruct a new Request with the same body for Arcjet to read
+    const arcjetReq = new Request(request.url, {
+        method: request.method,
+        headers: request.headers,
+        body: JSON.stringify(body),
+    })
+
+
     const lastUserMessage =
         [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
     const decision = await aj.protect(request, {
