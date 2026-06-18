@@ -1,387 +1,162 @@
-# 🚀 Full Stack Agentic App Builder
+# 🚀 BuildAI - Full Stack Agentic App Builder
 
-Build AI-powered applications from simple prompts using **Next.js, Supabase, Gemini AI, Cline SDK, Clerk, and Shadcn UI**.
+Build complete React applications using AI.
 
-Users describe the app they want, and the AI generates production-ready React code with a live preview, persistent workspace history, image uploads, and autonomous AI improvements—similar to **Bolt.new** and **Lovable**.
+BuildAI allows users to describe an app in plain English and instantly generate production-ready React code with a live preview, persistent chat history, image uploads, and AI-powered improvements.
 
----
-
-## 📋 Table of Contents
-
-* Overview
-* Features
-* Tech Stack
-* Architecture
-* Getting Started
-* Installation
-* Environment Variables
-* Database Setup
-* Credits & Plans
-* AI Workflow
+Inspired by platforms like Bolt.new and Lovable.
 
 ---
 
-# 🌟 Overview
+## 🌐 Live Demo
 
-This project is a full-stack AI application builder that transforms natural language prompts into working React applications.
+deployed URL here:
 
-Users can:
-
-* Generate complete React applications using AI
-* Preview generated code instantly with Sandpack
-* Upload images and use them in prompts
-* Save project history automatically
-* Improve generated apps using an autonomous AI Agent powered by Cline SDK
-* Export projects as ZIP files
-* Manage credits and subscriptions
-
-The platform combines modern AI tooling with a production-ready SaaS architecture.
-
----
-
-# ✨ Features
-
-## 🏠 Landing Page
-
-* Prompt textarea with rotating placeholders
-* Suggestion chips for quick prompts
-* Browser-style live preview mockup
-* Feature showcase section
-* Step-by-step workflow explanation
-* Pricing section using Clerk PricingTable
-* Fully responsive dark theme UI
-
----
-
-## 🔐 Authentication & Billing
-
-Powered by Clerk.
-
-### Features
-
-* Google OAuth Sign-In
-* User creation in Supabase on first login
-* Credit allocation for new users
-* Automatic plan detection
-* Credit top-ups on plan upgrades
-* Pricing modal accessible from header
-
----
-
-## 💬 Workspace
-
-A powerful split-screen environment.
-
-### Left Panel
-
-* AI chat interface
-* Streaming responses
-* Markdown rendering
-* Blinking typing cursor
-* Persistent chat history
-* User avatars
-* Auto-scroll support
-
-### Right Panel
-
-* Live code preview
-* Code editor
-* File explorer
-* Preview tab
-* Code tab
-
----
-
-## 🖼️ Image Upload Support
-
-Users can upload images directly inside chats.
-
-### Flow
-
-1. Upload image
-2. Store in Supabase Storage
-3. Generate public CDN URL
-4. Inject image URL into AI prompt
-5. AI uses image context while generating code
-
----
-
-## 🤖 AI Code Generation
-
-### Endpoint
-
-/api/gen-ai-code
-
-### Powered By
-
-* Gemini 3.5 Flash
-* Thinking Configuration Enabled
-
-### Features
-
-* Streams reasoning steps live
-* Returns strict JSON structure
-
-```json
-{
-  "assistantMessage": "",
-  "title": "",
-  "files": {},
-  "dependencies": {}
-}
+```text
+https://forge-ruddy-seven.vercel.app/
 ```
 
-* Filters hallucinated npm packages
-* Validates dependencies against npm registry
-* Atomic database transactions
-* Automatic credit deduction
+
+## ✨ Features
+
+* [x] AI-powered React app generation
+* [x] Live Sandpack preview
+* [x] Persistent chat history
+* [x] Image upload support
+* [x] Clerk authentication
+* [x] Google OAuth login
+* [x] Credit-based usage system
+* [x] Subscription plans
+* [x] AI-powered app improvements using Cline SDK
+* [x] Runtime error detection
+* [x] Fix with AI functionality
+* [x] Project management dashboard
+* [x] Export projects as ZIP
+* [x] Dark mode UI
+* [x] Responsive design
 
 ---
 
-## 🧠 Improve with AI Agent
+## 🏗️ Tech Stack
 
-### Endpoint
+| Category       | Technology          |
+| -------------- | ------------------- |
+| Framework      | Next.js 15          |
+| Language       | TypeScript          |
+| Authentication | Clerk               |
+| Billing        | Clerk               |
+| Database       | Supabase PostgreSQL |
+| ORM            | Prisma              |
+| Storage        | Supabase Storage    |
+| AI Model       | Gemini Flash        |
+| AI Agent       | Cline SDK           |
+| Code Preview   | Sandpack            |
+| Styling        | Tailwind CSS        |
+| UI Components  | Shadcn UI           |
+| Rate Limiting  | Arcjet              |
 
-/api/improve
+---
 
-Powered by:
+## 🧠 How It Works
 
-* Cline SDK (@cline/sdk)
+### 1. Generate an App
 
-Available for:
+Users enter a prompt describing the application they want to build.
 
-* Starter Plan
-* Pro Plan
+Example:
 
-### Agent Capabilities
-
-* Understands project structure
-* Updates files autonomously
-* Streams reasoning in real time
-* Patches files one-by-one
-* Updates Sandpack instantly
-
-### Tools
-
-#### update_file
-
-Modifies project files.
-
-#### done_improving
-
-Terminates agent execution cleanly.
-
-```ts
-lifecycle: {
-  completesRun: true
-}
+```text
+Create a modern fitness tracker dashboard with charts and dark mode.
 ```
 
----
+The AI generates:
 
-## 🛠️ Fix with AI
-
-Automatically detects:
-
-* Runtime errors
-* Compilation errors
-* Build errors
-
-### Workflow
-
-1. Error detected inside Sandpack
-2. Error banner appears
-3. User clicks "Fix with AI"
-4. Error context sent to Gemini
-5. AI generates corrected code
-
----
-
-## ⚡ Sandpack Integration
-
-### Features
-
-* Live preview
-* File explorer
-* Read-only CodeMirror editor
-* Tailwind CSS support
-* Instant updates
-
-### Performance Optimizations
-
-* Smart re-keying
-* Remount only when file structure changes
-* Preserve state when file contents change
-
----
-
-## 📦 Export Project
-
-Users can download generated projects as ZIP files.
-
-Includes:
-
-* Source code
-* package.json
+* React components
+* Styling
+* File structure
 * Dependencies
-* Project structure
-
-Ready to run locally.
 
 ---
 
-## 📂 Projects Dashboard
+### 2. Preview Instantly
 
-Manage all generated workspaces.
-
-### Features
-
-* Workspace grid view
-* Prompt preview
-* Message count
-* Last updated timestamp
-* Delete project functionality
-* Confirmation modal
-* Empty state CTA
+Generated code is rendered inside Sandpack, allowing users to interact with the application immediately.
 
 ---
 
-## 💳 Credit System
+### 3. Improve with AI
 
-### Free Plan
+Pro and Starter users can launch an AI agent powered by Cline SDK.
 
-* 10 Credits
+The agent:
 
-### Starter Plan
-
-* 50 Credits
-
-### Pro Plan
-
-* 150 Credits
-
-### Usage
-
-| Action          | Cost     |
-| --------------- | -------- |
-| Generate App    | 1 Credit |
-| Improve with AI | 1 Credit |
-
-### Validation
-
-* Client-side checks
-* Server-side protection (HTTP 402 fallback)
-
-Credits are preserved on downgrades and topped up on upgrades.
+* Analyzes the project
+* Updates files autonomously
+* Improves UI and functionality
+* Streams progress in real time
 
 ---
 
-# 🏗️ Tech Stack
+### 4. Export Project
 
-| Layer          | Technology                          |
-| -------------- | ----------------------------------- |
-| Framework      | Next.js 15 (App Router, TypeScript) |
-| Authentication | Clerk                               |
-| Billing        | Clerk                               |
-| Database       | Supabase PostgreSQL                 |
-| ORM            | Prisma                              |
-| Storage        | Supabase Storage                    |
-| AI Model       | Gemini 3.5 Flash                    |
-| AI Agent       | Cline SDK                           |
-| Code Preview   | Sandpack                            |
-| Styling        | Tailwind CSS v4                     |
-| UI Components  | Shadcn UI                           |
-| Rate Limiting  | Arcjet                              |
+Download the generated project as a ZIP file and continue development locally.
 
 ---
 
-# 🏛️ Architecture
+## 🔐 Authentication
 
-```text
-User
- │
- ▼
-Next.js Frontend
- │
- ├── Clerk Authentication
- ├── Sandpack Preview
- ├── Chat Workspace
- │
- ▼
-API Routes
- │
- ├── /api/gen-ai-code
- ├── /api/improve
- └── /api/upload
- │
- ▼
-Gemini AI + Cline Agent
- │
- ▼
-Supabase + Prisma
- │
- ├── Users
- ├── Workspaces
- ├── Messages
- └── File Data
-```
+Authentication is powered by Clerk.
+
+Features include:
+
+* Google OAuth Login
+* Secure session management
+* User profile syncing
+* Subscription plan management
 
 ---
 
-# 🚀 Getting Started
+## 💳 Credits & Plans
 
-## Prerequisites
+| Plan    | Credits |
+| ------- | ------- |
+| Free    | 10      |
+| Starter | 50      |
+| Pro     | 150     |
 
-* Node.js 22+
-* Supabase Project
-* Clerk Application
-* Google AI Studio API Key
-* Arcjet Account
+### Usage Cost
 
----
+| Action          | Credits |
+| --------------- | ------- |
+| Generate App    | 1       |
+| Improve with AI | 1       |
 
-# 📥 Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/yourusername/buildai.git
-cd buildai
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Generate Prisma Client:
-
-```bash
-npx prisma generate
-```
-
-Push database schema:
-
-```bash
-npx prisma db push
-```
-
-Start development server:
-
-```bash
-npm run dev
-```
-
-Open:
-
-```text
-http://localhost:3000
-```
+Credits are automatically managed based on the user's subscription plan.
 
 ---
 
-# 🔑 Environment Variables
+## 🗄️ Database
+
+### User
+
+Stores:
+
+* Clerk user information
+* Credits
+* Subscription plan
+
+### Workspace
+
+Stores:
+
+* Chat history
+* Generated files
+* Dependencies
+* Project metadata
+
+---
+
+## ⚙️ Environment Variables
 
 Create a `.env.local` file:
 
@@ -408,107 +183,76 @@ ARCJET_KEY=
 
 ---
 
-# 🗄️ Database Setup
+## 🚀 Getting Started
 
-## User Model
+### Clone Repository
 
-```ts
-User {
-  id
-  clerkId
-  name
-  email
-  imageUrl
-  credits
-  plan
-  createdAt
-  updatedAt
-}
+```bash
+git clone https://github.com/YaserArfath320/buildai.git
+cd buildai
 ```
 
-### Purpose
+### Install Dependencies
 
-* Synced from Clerk
-* Stores credits
-* Tracks subscription plans
-
----
-
-## Workspace Model
-
-```ts
-Workspace {
-  id
-  userId
-  title
-  messages
-  fileData
-  createdAt
-  updatedAt
-}
+```bash
+npm install
 ```
 
-### Purpose
+### Generate Prisma Client
 
-* Stores chat history
-* Stores generated files
-* Stores validated dependencies
+```bash
+npx prisma generate
+```
 
----
+### Push Database Schema
 
-## Supabase Storage
+```bash
+npx prisma db push
+```
 
-### Bucket
+### Start Development Server
+
+```bash
+npm run dev
+```
+
+Open:
 
 ```text
-workspace-images
-```
-
-Structure:
-
-```text
-workspace-images/
- └── userId/
-      └── workspaceId/
-           └── image.png
-```
-
-Public URLs are injected into prompts automatically.
-
----
-
-# 🔄 AI Workflow
-
-```text
-User Prompt
-      │
-      ▼
- Gemini 3.5 Flash
-      │
-      ▼
- Generated Files
-      │
-      ▼
- Sandpack Preview
-      │
-      ▼
- Improve with Cline Agent
-      │
-      ▼
- Updated Production App
+http://localhost:3000
 ```
 
 ---
 
-# 🎯 Future Enhancements
+## 📂 Project Structure
 
-* Multi-file code generation
-* Team collaboration
-* Real-time multiplayer editing
-* GitHub repository export
-* Custom AI model selection
-* Deployment to Vercel with one click
-* AI-powered design system generation
+```text
+app/
+├── api/
+│   ├── gen-ai-code/
+│   ├── improve/
+│   └── upload/
+├── workspace/
+├── projects/
+└── page.tsx
+
+components/
+lib/
+prisma/
+public/
+```
+
+---
+
+## 🎯 Key Highlights
+
+* Full-stack AI SaaS architecture
+* Real-time AI code generation
+* Autonomous AI agent improvements
+* Live code preview and editing
+* Scalable PostgreSQL backend
+* Production-ready authentication and billing
+* Modern UI built with Shadcn UI and Tailwind CSS
 
 ---
 
@@ -518,4 +262,4 @@ This project is licensed under the MIT License.
 
 ---
 
-Built with ❤️ using Next.js, Supabase, Gemini AI, Cline SDK, Clerk, Tailwind CSS, and Shadcn UI.
+Built with ❤️ using Next.js, Supabase, Gemini AI, Clerk, Cline SDK, Tailwind CSS, and Shadcn UI.
