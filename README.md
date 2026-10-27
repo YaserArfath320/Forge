@@ -16,6 +16,19 @@ deployed URL here:
 https://forge-ruddy-seven.vercel.app/
 ```
 
+<img width="1905" height="895" alt="image" src="https://github.com/user-attachments/assets/e0d6047a-ff5a-4d6a-a631-18ba45706cb2" />
+<img width="1873" height="840" alt="image" src="https://github.com/user-attachments/assets/a6fc4d3f-0871-45f0-9d4e-d07674083228" />
+<img width="1892" height="858" alt="image" src="https://github.com/user-attachments/assets/b29893bc-92e8-4db3-8597-1453ff3c2d86" />
+<img width="1887" height="782" alt="image" src="https://github.com/user-attachments/assets/84ad54b7-15f9-4d8c-abeb-f9d7a6a3b824" />
+<img width="1868" height="942" alt="image" src="https://github.com/user-attachments/assets/1875e2fd-fece-4952-96c0-4088d4cf0faa" />
+<img width="1869" height="936" alt="image" src="https://github.com/user-attachments/assets/3eae0b08-b4c3-4e97-9e2e-b35a13229b26" />
+
+
+
+
+
+
+
 
 ## ✨ Features
 
